@@ -1904,6 +1904,22 @@ func (f *Fpdf) AddUTF8Font(familyStr, styleStr, fileStr string) {
 	f.addFont(fontFamilyEscape(familyStr), styleStr, fileStr, true)
 }
 
+// AddFontsFromInstance imports fonts from other instance.
+func (f *Fpdf) AddFontsFromInstance(souce *Fpdf) {
+	for name, font := range souce.fonts {
+		file := *font.utf8File
+		file.fileReader = &fileReader{
+			readerPosition: 0,
+			array:          file.fileReader.array,
+		}
+
+		font.utf8File = &file
+		font.usedRunes = make(map[int]int, 256)
+
+		f.fonts[name] = font
+	}
+}
+
 func (f *Fpdf) addFont(familyStr, styleStr, fileStr string, isUTF8 bool) {
 	if fileStr == "" {
 		if isUTF8 {
